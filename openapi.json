@@ -1,0 +1,1533 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Paygate Merchant API",
+    "description": "One endpoint handles every request: `POST /api/Process/Request` with the header `api-version: 2.0`.\r\n`requestType` in the body picks the operation, and `data` carries its fields.\r\n\r\n## Authentication\r\n\r\nEach request proves it comes from you in one of two ways:\r\n\r\n- **Request signature (preferred).** Send `X-Callback-Signature`: the lower-case hex HMAC-SHA256 of the exact raw body, keyed with your mid secret in lower case. Sign the bytes you send; re-serialising the JSON changes them.\r\n- **Hash field.** Without the header, put `hash` in `data`: the lower-case hex SHA-256 of the fields listed in its description, joined with `~`, ending with your mid secret in lower case.\r\n\r\n## Responses\r\n\r\nThe HTTP status is always 200. `success: false` with an `error[]` entry means the request was rejected.\r\n`success: true` means it was accepted; `data.status` and the callback to your `notificationUrl` give the outcome.\r\nCheck `data.hash` before trusting a response or callback.\r\n\r\nSending the same `merchantRefNo` again returns the original transaction instead of creating a second one.\r\n\r\nOther `requestType` values exist for specific products; they are not part of this document.\r\n## Error codes\r\n\r\nReturned in `error[].errorCode`. Some messages are replaced with a more specific text at runtime.\r\n\r\n| Code | Message |\r\n|---|---|\r\n| 00 | internal system error |\r\n| 01 | transaction declined as per risk checks |\r\n| 02 | reason unknown. |\r\n| 11001 | midCode required |\r\n| 11002 | invalid midCode |\r\n| 11003 | account disabled |\r\n| 11004 | currency required |\r\n| 11005 | currency length must 3 characters |\r\n| 11006 | country required |\r\n| 11007 | country length must be 2 |\r\n| 11008 | notificationUrl required |\r\n| 11009 | returnUrl required |\r\n| 11010 | hash required |\r\n| 11011 | invalid amount |\r\n| 11012 | merchantRefNo required |\r\n| 11013 | invalid firstName |\r\n| 11014 | invalid lastname |\r\n| 11015 | city required |\r\n| 11016 | state required |\r\n| 11017 | address required |\r\n| 11018 | postcode required |\r\n| 11019 | phone required |\r\n| 11020 | phone length should be greater than 9 and lesser than 15 |\r\n| 11021 | email required |\r\n| 11022 | invalid email |\r\n| 11023 | currency not supported |\r\n| 11024 | country not supported |\r\n| 11025 | invalid country-currency pair |\r\n| 11026 | Payin disabled |\r\n| 11027 | duplicate merchantRefNo found |\r\n| 11028 | paymentMethod required |\r\n| 11029 | vpa_address required |\r\n| 11030 | invalid vpa_address |\r\n| 11031 | hash does not match |\r\n| 11032 | minimum &lt;amount value&gt; amount required |\r\n| 11033 | maximum &lt;amount value&gt; amount allowed |\r\n| 11034 | Daily usage of same VPA limit exceeded. Please try with another VPA to continue. |\r\n| 11035 | Allowed Transaction Attempts (2) from same VPA are already in-process. Please wait for 75 min to use the same VPA; or Choose another VPA to continue the transaction. |\r\n| 11036 | Allowed Transaction Attempts (1) from same VPA are already in-process. Please wait for 75 min to use the same VPA; or Choose another VPA to continue the transaction. |\r\n| 11037 | daily user volume limit exceed |\r\n| 11038 | daily user transaction limit exceed |\r\n| 11039 | card_holder_name required |\r\n| 11040 | card_number required |\r\n| 11041 | invalid card_number |\r\n| 11042 | year (for card expiry) required |\r\n| 11043 | invalid year (for card expiry) |\r\n| 11044 | month (for card expiry) required |\r\n| 11045 | invalid month for card expiry |\r\n| 11046 | cvv required |\r\n| 11047 | invalid cvv |\r\n| 11048 | bank_code required |\r\n| 11435 | bank_code required |\r\n| 11049 | bank_code not mapped |\r\n| 11052 | User Not Found |\r\n| 11053 | Password Incorrect |\r\n| 11054 | User Inactive |\r\n| 11055 | Validation failed |\r\n| 11056 | User Not Approved by Financial Institution |\r\n| 11057 | Transaction could not be processed |\r\n| 11058 | Currency not supported |\r\n| 11059 | Merchant GST details not present |\r\n| 11060 | Merchant TDR details not present |\r\n| 11061 | Account is Locked |\r\n| 11062 | Transaction abandoned by the user |\r\n| 11063 | Invalid request |\r\n| 11064 | Invalid currency code |\r\n| 11065 | invalid merchantRefNo |\r\n| 11066 | invalid transaction type |\r\n| 11067 | invalid hash |\r\n| 11068 | internal error. could not process transaction. |\r\n| 11069 | internal error. could not create transaction. |\r\n| 11071 | requestType required |\r\n| 11072 | transaction_id required |\r\n| 11073 | invalid transaction_id or midCode |\r\n| 11074 | get available balance feature not available |\r\n| 11076 | request object null |\r\n| 11077 | payin_request_object object null |\r\n| 11078 | integrationType required |\r\n| 11080 | payout_request_object object null |\r\n| 11082 | load balance limit exceed |\r\n| 11083 | invalid paymentMethod |\r\n| 11084 | get_status_request_object object null |\r\n| 11085 | invalid transaction_type |\r\n| 11086 | get_balance_request_object object null |\r\n| 11087 | Transaction can't process, as customer is blacklisted |\r\n| 11088 | Payout disabled |\r\n| 11090 | invalid account_name |\r\n| 11091 | invalid account_name. Only alphabet allowed |\r\n| 11092 | account_number required |\r\n| 11093 | invalid account_number |\r\n| 11094 | bank_ifsc required |\r\n| 11095 | invalid bank_ifsc |\r\n| 11096 | invalid bank_code. bank not supported |\r\n| 11097 | bank_name required |\r\n| 11098 | bank_branch required |\r\n| 11100 | transaction_type required |\r\n| 11101 | invalid bank_code |\r\n| 11103 | refund_request_object object null |\r\n| 11106 | invalid refund_amount |\r\n| 11107 | refund_amount must be equal to deposit transaction amount |\r\n| 11108 | transaction already refunded |\r\n| 11109 | only approved transaction is allowed to refund |\r\n| 11110 | data object null |\r\n| 11111 | invalid postcode |\r\n| 11112 | invalid city |\r\n| 11113 | riskData required |\r\n| 11114 | riskData.user_category required |\r\n| 11115 | riskData.device_fingerprint required |\r\n| 11116 | daily user volume velocity limit exceed |\r\n| 11120 | Daily payout transaction Amount limit exceeded |\r\n| 11122 | Refund not allowed for this Transaction ID. Allowed period &lt;refundTimeWindow&gt; for Refund request has exceeded. |\r\n| 11123 | An existing Refund request is already in process against this Transaction ID. |\r\n| 11124 | account_type required |\r\n| 11126 | invalid account_type |\r\n| 11127 | &lt;fieldName&gt; is required |\r\n| 11129 | sendingcurrency required |\r\n| 11130 | receivingcurrency required |\r\n| 11131 | ipAddress required |\r\n| 11132 | invalid ipAddress |\r\n| 11133 | only deposit transaction is allowed to refund |\r\n| 11135 | merchantRefNo must be between 1 and 100 chars long and must not contain any whitespace. |\r\n| 11136 | requestAmount required |\r\n| 11137 | includeFee required |\r\n| 11138 | request to allow quote is disabled |\r\n| 11139 | fx rate type is not set. Please contact support team. |\r\n| 11140 | receiver_kyc object getting null |\r\n| 11141 | receiverFullName required |\r\n| 11151 | payoutfor required |\r\n| 11152 | invalid quoteId |\r\n| 11153 | quote has been already used |\r\n| 11154 | sender_kyc object getting null |\r\n| 11155 | senderfullname required |\r\n| 11157 | currency mismatch with quote currency |\r\n| 11158 | country mismatch with quote country |\r\n| 11159 | amount mismatch with quote amount |\r\n| 11160 | vpa_address blacklisted |\r\n| 11161 | city blacklisted |\r\n| 11162 | state blacklisted |\r\n| 11163 | phone length must not be less than 9 |\r\n| 11164 | requestAppliesFor required |\r\n| 11165 | requestAppliesFor must be 'sending amount' or 'receiving amount' |\r\n| 11166 | pin required |\r\n| 11168 | quote does not exist |\r\n| 11169 | quote has already been rejected |\r\n| 11170 | accept_quote value must be either True or False |\r\n| 11188 | quote has been expired |\r\n| 11189 | document_id required |\r\n| 11192 | Invalid phone number |\r\n| 11197 | Payment method not supported. Please contact support team. |\r\n| 11198 | Invalid document_id (CPF). CPF should be 11 digits. |\r\n| 11199 | Invalid document_id (CNPJ). CNPJ should be 14 digits. |\r\n| 11200 | Phone must be 11 digits with the third digit being 9. |\r\n| 11205 | Incorrect wallet or mobile number |\r\n| 11209 | Something went wrong. Please try again. |\r\n| 11210 | Transaction failed at acquirer |\r\n| 11221 | document type not supported |\r\n| 11236 | Monthly User Volume Velocity Limit Exceed. |\r\n| 11242 | Incorrect account details |\r\n| 11247 | PIN must be a 4-digit number |\r\n| 11285 | Phone number must start with '255' and contain exactly 12 digits |\r\n| 11286 | wallet_number must start with '255' and contain exactly 12 digits |\r\n| 11289 | Transaction Timeout \\| User Did not authorized the payment |\r\n| 11290 | phone number must be 11 digits and starting with 010,011,012,015 |\r\n| 11291 | wallet_number must be 11 digits and starting with 010,011,012,015 |\r\n| 11292 | Transaction Failed \\| Customer account not working |\r\n| 11294 | Transaction Failed \\| Inactive wallet |\r\n| 11295 | Transaction Failed \\| Suspended wallet |\r\n| 11296 | Transaction Failed \\| Restricted wallet |\r\n| 11297 | Transaction Failed \\| User wallet balance limit reached |\r\n| 11299 | Transaction is in progress |\r\n| 11300 | phone must start with 07 and contain exactly 10 digits |\r\n| 11301 | phone must start with 254 and contain exactly 12 digits |\r\n| 11302 | phone must start with +254 and contain exactly 13 digits |\r\n| 11303 | wallet_number must start with 07 and contain exactly 10 digits |\r\n| 11304 | wallet_number must start with 254 and contain exactly 12 digits. |\r\n| 11305 | wallet_number must start with +254 and contain exactly 13 digits |\r\n| 11306 | Invalid phone. It should start with prefix('07','254','+254') and contain 10 to 13 digits. |\r\n| 11307 | Invalid wallet_number. It should start with prefix ('07','254','+254') and contain 10 to 13 digits. |\r\n| 11280 | Incorrect phone number. It should start with '07' or '254' or '+254' |\r\n| 11317 | File upload failed |\r\n| 11318 | invalid bankId - Bank not available |\r\n| 11319 | &lt;fieldName&gt; size exceeds the &lt;number&gt; MB limit. |\r\n| 11320 | &lt;fieldName&gt; has an invalid format. Only PNG and JPEG (JPG) are allowed. |\r\n| 11321 | &lt;fieldName&gt; contains an invalid Base64 string |\r\n| 11391 | This service is currently down or unavailable. Please contact customer support team. |\r\n| 11322 | BusinessTransaction required |\r\n| 11323 | BusinessTransaction.BusinessType required |\r\n| 11324 | BusinessTransaction.OriginCountry required |\r\n| 11325 | BusinessTransaction.UserIdNumber required |\r\n| 11326 | BusinessTransaction.UserDob required |\r\n| 11327 | BusinessTransaction.UserBirthplace required |\r\n| 11328 | BusinessTransaction.ShippingNumber required |\r\n| 11329 | BusinessTransaction.ShippingDate required |\r\n| 11330 | BusinessTransaction.HsnCode required |\r\n| 11331 | BusinessTransaction.CodeOfPurpose required |\r\n| 11332 | BusinessTransaction.LoadingPort required |\r\n| 11333 | invalid ExportTxnAmount |\r\n| 11334 | BusinessType length must not be greater than 200. |\r\n| 11335 | OriginCountry length must not be greater than 200. |\r\n| 11336 | UserIdNumber length must not be greater than 200. |\r\n| 11337 | UserDob length must not be greater than 200. |\r\n| 11338 | UserBirthplace length must not be greater than 200. |\r\n| 11339 | ShippingNumber length must not be greater than 200. |\r\n| 11340 | ShippingDate length must not be greater than 200. |\r\n| 11341 | HsnCode length must not be greater than 200. |\r\n| 11342 | CodeOfPurpose length must not be greater than 200. |\r\n| 11343 | LoadingPort length must not be greater than 200. |\r\n| 11344 | UserCountry length must not be greater than 200. |\r\n| 11345 | ExportTxnCurrency length must not be greater than 200. |\r\n| 11346 | Transaction was failed as account is NRE accounts |\r\n| 11347 | Transaction was failed as Rejected by bank |\r\n| 11348 | Invalid Account \\| Account blocked or frozen |\r\n| 11349 | Transaction rejected by beneficiary bank |\r\n| 11350 | Transaction failed \\| Rejected by bank server |\r\n| 11355 | invalid payment method |\r\n| 11416 | Invalid account_number. account_number must contain at least 10 digits and no more than 13 |\r\n| 11191 | account_number is required |\r\n| 11420 | country not found. |\r\n| 11421 | Could not process quote |\r\n| 11081 | insufficient wallet balance to process payout. |\r\n| 11121 | Daily Total Txn Of Instant Payout Limit(Count) exceeded. |\r\n| 11393 | processor not found for this payment method |\r\n| 11394 | Merchant not allowed for refund. |\r\n| 11395 | internal error. could not find bank account detail. |\r\n| 11396 | request to allow quote not found. |\r\n| 11397 | Daily Total Amount Of Batch Payout Limit(Amount) exceeded. |\r\n| 11398 | Daily Total Txn Of Batch Payout Limit(Count) exceeded. |\r\n| 11399 | Refund request for transaction &lt;refundTxnId&gt; was declined by the acquirer |\r\n| 11400 | Refund request for transaction &lt;refundTxnId&gt; is currently being processed |\r\n| 11359 | Merchant category is required. |\r\n| 11360 | Invalid merchant category. |\r\n| 11361 | fetch_plan_request_object getting null. |\r\n| 11362 | fetch_subscription_request_object getting null. |\r\n| 11423 | UPI recurring service is not enabled. |\r\n| 11424 | plan_id required. |\r\n| 11425 | subscription_id required. |\r\n| 11363 | Please fill all required card details to proceed. |\r\n| 11426 | Subscription not found. |\r\n| 11427 | Subscription already expired. |\r\n| 11428 | No active plan found. |\r\n| 11429 | Plan amount did not match. |\r\n| 11364 | Aadhaar kyc is not enabled for merchant. |\r\n| 11432 | otp required. |\r\n| 11365 | An OTP has already been sent. |\r\n| 11433 | An OTP must be a 6-digit numeric value. |\r\n| 11366 | Unable to retrieve FX rate for the given merchant and target currency. |\r\n| 11367 | invalid requestamount. |\r\n| 11368 | Your Aadhaar KYC verification is incomplete. Please complete your KYC to continue. |\r\n| 11381 | Phone number must be 11 digits |\r\n| 11383 | postcode must be a 6-digit number |\r\n| 11384 | Transaction already completed, Try with another transaction |\r\n| 11385 | wallet_number must start with 06,07 and contain exactly 10 digit |\r\n| 11386 | account_number must be exactly 24 digits |\r\n| 11387 | account_name required |\r\n| 11388 | Minimum page value must be 1 |\r\n| 11389 | Limit must be between 1 to 50 |\r\n| 11430 | aadhaar_number required. |\r\n| 11431 | Aadhaar number must be a 12-digit numeric value. |\r\n| 11369 | The same request has already been submitted. |\r\n| 11370 | Your Aadhaar KYC is already verified. No further action is needed. |\r\n| 11371 | Phone number should be 10 digits long. |\r\n| 11051 | invalid requestType |\r\n| 11373 | wallet_number must start with 254 and contain exactly 12 digits. |\r\n| 11374 | wallet_number required |\r\n| 11375 | Wallet Deposit : Daily usage of same wallet_number(VelocityLimit) is exceeded. Please try with another wallet_number to continue. |\r\n| 11376 | Wallet Deposit : Allowed transaction limits(VelocityLimit) from same wallet_number is already in process. Please use another wallet_number. |\r\n| 11377 | Wallet Payout : Daily usage of same wallet_number(VelocityLimit) is exceeded. Please try with another wallet_number to continue. |\r\n| 11378 | Wallet Payout : Allowed transaction limits(VelocityLimit) from same wallet_number is already in process. Please use another wallet_number. |\r\n| 11379 | Invalid account_number. account_number must contain 34 number |\r\n| 11380 | wallet_number must start with '010','011','012','015' and contain exactly 11 digits. |\r\n| 11099 | payout_type required |\r\n| 11089 | Daily transfer limit exceeded. Please try again later. |\r\n| 11406 | Invalid phone number. It must start with 09 and contain exactly 11 digits. |\r\n| 11407 | Invalid wallet_number. It must start with 09 and contain exactly 11 digits. |\r\n| 11358 | phone must start with 06,07 and contain exactly 10 digits |\r\n| 11411 | wallet_number must start with 06,07 and contain exactly 10 digit |\r\n| 11412 | account_number must be exactly 24 digits |\r\n| 11410 | phone must start with 01 and contain exactly 11 digit |\r\n| 11408 | wallet_number must start with 01 and contain exactly 11 digits |\r\n| 11415 | Invalid bank account number. It must be numeric and contain 10–16 digits. |\r\n| 11310 | Invalid account number. It should contain 10 to 14 digits. |\r\n| 11264 | wallet_number should be 11 digits and starting with 03 |\r\n| 11434 | wallet required  |\r\n| 11173 | Request accepted |\r\n| 11175 | Transaction ID not found |\r\n| 11176 | Transaction is pending. Order still not paid. |\r\n| 11440 | Payout amount must be a whole number. Decimal amounts are not supported |\r\n| 11218 | document_id must be 13 digits only |\r\n| 11441 | Processing currency is not configured |\r\n| 11442 | SenderDetails required |\r\n| 11443 | SenderDetails.FirstName required |\r\n| 11444 | SenderDetails.LastName required |\r\n| 11445 | SenderDetails.Address required |\r\n| 11446 | SenderDetails.Postcode required |\r\n| 11447 | SenderDetails.City required |\r\n| 11448 | SenderDetails.Country required |\r\n| 11449 | SenderDetails.Nationality required |\r\n| 11450 | SenderDetails.SenderType must be 'Individual' or 'Corporate' |\r\n| 11451 | SenderDetails.Nationality must be a valid ISO-2 country code |\r\n| 11452 | get_transactionlist_request_object getting null |\r\n| 11179 | from_date is required |\r\n| 11180 | from_date format must be : yyyy-MM-dd HH:mm:ss |\r\n| 11181 | from_date should not be allowed for more than 180 days back |\r\n| 11182 | to_date is required |\r\n| 11183 | to_date format must be : yyyy-MM-dd HH:mm:ss |\r\n| 11184 | to_date must be greater than from_date |\r\n| 11185 | skip value should be 0 or more than 0 |\r\n| 11186 | take value must be more than 0 |\r\n| 11187 | take value should not be more than 100 |\r\n| 11453 | invalid signature |\r\n| 11454 | signature required |\r\n| 11457 | skip is required and it should be numeric |\r\n| 11458 | take is required and it should be numeric |\r\n| 11455 | transaction_id or merchant_ref_no is required |\r\n| 11456 | invalid transaction_id / merchant_ref_no or midCode |\r\n| 11462 | account_number must be a PK IBAN: PK followed by 22 letters or digits |\r\n| 11463 | wallet_number must be 11 digits starting with 0 |\r\n| 11465 | SenderDetails.Country must be a 2-letter ISO country code |\r\n| 11467 | SenderDetails.Date_of_birth must be a valid past date |\r\n| 11468 | Invalid bank account details |\r\n| 11469 | Account is not NRE |\r\n| 11470 | Account is NRE |\r\n",
+    "version": "2.0"
+  },
+  "paths": {
+    "/api/Process/Request": {
+      "post": {
+        "tags": [
+          "Process"
+        ],
+        "summary": "Create a payin, payout or refund, or query a status or balance.",
+        "description": "`requestType` picks the operation and the shape of `data`. Send header `api-version: 2.0`; without it the request goes to the legacy v1 API.\r\n            \r\nThe response is always HTTP 200. Check `success` and `error[]`, then `data.status`.\r\n            \r\n**Order of checks.** The first failing check returns its error:\r\n            \r\n1. Body: request missing 11076, `requestType` missing 11071, `data` missing 11110.\r\n2. `X-Callback-Signature`, when sent: bad signature 11031.\r\n3. Unknown `requestType` 11051, then the basic fields of `data` (see each field's description). PAYIN and PAYOUT: 11078, 11028, 11001, 11012, 11135, 11006, 11007, 11004, 11005, 11011.\r\n4. Merchant and configuration: 11002, 11023, 11024, 11025, payins disabled 11026, payouts disabled 11088, daily limit 11089, amount limits 11032 and 11033, blacklist 11087.\r\n5. Customer fields (11013 to 11022, 11131, 11132), callback URLs (11008, 11009), duplicate reference (11027) and `hash` (11010, 11031).\r\n6. `paymMethodFields`: required keys and formats are configured per payment method, country and currency, so ask us for the list for each method you enable.\r\n7. Payouts only: available balance 11081, sender details 11442 to 11451.\r\n            \r\nAn unexpected failure returns `00` \"internal system error\"; retry with GetStatus before resending.",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "header",
+            "description": "Must be `2.0`. Without it the request is routed to the legacy v1 API.",
+            "required": true,
+            "schema": {
+              "enum": [
+                "2.0"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Callback-Signature",
+            "in": "header",
+            "description": "Optional request signature: lower-case hex HMAC-SHA256 of the exact raw request body, keyed with your mid secret in lower case. A `sha256=` prefix is allowed. When it is valid, the `hash` field in `data` is not checked. A wrong signature returns 11031.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "`requestType` decides the shape of `data`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PayinRequestBody"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PayoutRequestBody"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RefundRequestBody"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetStatusRequestBody"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetBalanceRequestBody"
+                  }
+                ]
+              },
+              "examples": {
+                "payin-seamless": {
+                  "summary": "PAYIN, seamless bank transfer (Egypt)",
+                  "value": {
+                    "requestType": "PAYIN",
+                    "data": {
+                      "midCode": "MID000123",
+                      "integrationType": "S",
+                      "merchantRefNo": "ORDER-10001",
+                      "amount": 100.00,
+                      "currency": "EGP",
+                      "country": "EG",
+                      "paymentMethod": "BT",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                      "merchantUrl": {
+                        "notificationUrl": "https://merchant.example.com/payments/callback",
+                        "returnUrl": "https://merchant.example.com/payments/return"
+                      },
+                      "userInfo": {
+                        "firstName": "Sara",
+                        "lastName": "Example",
+                        "email": "sara@example.com",
+                        "phone": "+201000000000",
+                        "address": "1 Example Street",
+                        "city": "Cairo",
+                        "state": "Cairo",
+                        "postCode": "11511",
+                        "ipAddress": "203.0.113.10"
+                      },
+                      "riskData": {
+                        "user_category": "existing"
+                      },
+                      "customField": {
+                        "customField1": "basket-42"
+                      }
+                    }
+                  }
+                },
+                "payin-hosted": {
+                  "summary": "PAYIN, hosted checkout page",
+                  "value": {
+                    "requestType": "PAYIN",
+                    "data": {
+                      "midCode": "MID000123",
+                      "integrationType": "PG_H",
+                      "merchantRefNo": "ORDER-10002",
+                      "amount": 250.00,
+                      "currency": "EGP",
+                      "country": "EG",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                      "merchantUrl": {
+                        "notificationUrl": "https://merchant.example.com/payments/callback",
+                        "returnUrl": "https://merchant.example.com/payments/return"
+                      },
+                      "userInfo": {
+                        "firstName": "Sara",
+                        "lastName": "Example",
+                        "email": "sara@example.com",
+                        "phone": "+201000000000",
+                        "address": "1 Example Street",
+                        "city": "Cairo",
+                        "state": "Cairo",
+                        "postCode": "11511"
+                      },
+                      "riskData": {
+                        "user_category": "new"
+                      }
+                    }
+                  }
+                },
+                "payout-bank": {
+                  "summary": "PAYOUT, bank transfer (Egypt)",
+                  "value": {
+                    "requestType": "PAYOUT",
+                    "data": {
+                      "midCode": "MID000123",
+                      "integrationType": "S",
+                      "merchantRefNo": "PAYOUT-20001",
+                      "amount": 250.00,
+                      "currency": "EGP",
+                      "country": "EG",
+                      "paymentMethod": "BT",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                      "merchantUrl": {
+                        "notificationUrl": "https://merchant.example.com/payouts/callback"
+                      },
+                      "userInfo": {
+                        "firstName": "Omar",
+                        "lastName": "Example",
+                        "email": "omar@example.com",
+                        "phone": "+201000000001"
+                      },
+                      "paymMethodFields": {
+                        "account_holder_name": "Omar Example",
+                        "account_number": "1234567890",
+                        "bank_code": "EXAMPLEBANK"
+                      },
+                      "customField": {
+                        "customField1": "invoice-7781"
+                      }
+                    }
+                  }
+                },
+                "payout-india-sender": {
+                  "summary": "PAYOUT, India with sender details",
+                  "value": {
+                    "requestType": "PAYOUT",
+                    "data": {
+                      "midCode": "MID000123",
+                      "integrationType": "S",
+                      "merchantRefNo": "PAYOUT-20002",
+                      "amount": 2000.00,
+                      "currency": "INR",
+                      "country": "IN",
+                      "paymentMethod": "BT",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                      "merchantUrl": {
+                        "notificationUrl": "https://merchant.example.com/payouts/callback"
+                      },
+                      "userInfo": {
+                        "email": "ravi@example.com",
+                        "phone": "+919000000000"
+                      },
+                      "paymMethodFields": {
+                        "account_name": "Ravi Example",
+                        "account_number": "000111222333",
+                        "bank_ifsc": "EXMP0000001"
+                      },
+                      "senderDetails": {
+                        "firstName": "Jane",
+                        "lastName": "Sender",
+                        "address": "1 Example Road",
+                        "postcode": "400001",
+                        "city": "Mumbai",
+                        "country": "IN",
+                        "nationality": "IN",
+                        "senderType": "Individual"
+                      }
+                    }
+                  }
+                },
+                "refund": {
+                  "summary": "REFUND",
+                  "value": {
+                    "requestType": "REFUND",
+                    "data": {
+                      "midcode": "MID000123",
+                      "transaction_id": "IGP0000000000001",
+                      "merchant_ref_no": "REFUND-30001",
+                      "refund_amount": 50.00,
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f"
+                    }
+                  }
+                },
+                "getstatus": {
+                  "summary": "GetStatus by transaction_id",
+                  "value": {
+                    "requestType": "GetStatus",
+                    "data": {
+                      "midcode": "MID000123",
+                      "transaction_id": "IGP0000000000001",
+                      "transaction_type": "PAYIN",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f"
+                    }
+                  }
+                },
+                "getbalance": {
+                  "summary": "GetBalance",
+                  "value": {
+                    "requestType": "GetBalance",
+                    "data": {
+                      "midcode": "MID000123",
+                      "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Always HTTP 200. Check `success` and `error[]`, then `data.status`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PayinResponseBody"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayoutResponseBody"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RefundResponseBody"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetStatusResponseBody"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetBalanceResponseBody"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseBody"
+                    }
+                  ]
+                },
+                "examples": {
+                  "payin-hosted": {
+                    "summary": "PAYIN accepted, redirect to checkout_url",
+                    "value": {
+                      "success": true,
+                      "midCode": "MID000123",
+                      "requestType": "PAYIN",
+                      "merchantRefNo": "ORDER-10002",
+                      "error": [ ],
+                      "data": {
+                        "transaction_id": "IGP0000000000002",
+                        "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                        "paymentMethod": null,
+                        "integrationType": "PG_H",
+                        "transaction_date": "20261119_101500",
+                        "merchantRefNo": "ORDER-10002",
+                        "amount": 250.00,
+                        "currency": "EGP",
+                        "country": "EG",
+                        "status": "PENDING",
+                        "message": "transaction pending",
+                        "checkout_url": "https://checkout.example.com/checkout?Token=00000000-0000-0000-0000-000000000000",
+                        "transactionGuid": "00000000-0000-0000-0000-000000000000"
+                      }
+                    }
+                  },
+                  "payout": {
+                    "summary": "PAYOUT accepted",
+                    "value": {
+                      "success": true,
+                      "midCode": "MID000123",
+                      "requestType": "PAYOUT",
+                      "merchantRefNo": "PAYOUT-20001",
+                      "error": [ ],
+                      "data": {
+                        "transaction_id": "IGW0000000000001",
+                        "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f",
+                        "paymentMethod": "BT",
+                        "integrationType": "S",
+                        "transaction_date": "20261119_101700",
+                        "merchantRefNo": "PAYOUT-20001",
+                        "amount": 250.00,
+                        "currency": "EGP",
+                        "country": "EG",
+                        "status": "PENDING",
+                        "message": "payout pending",
+                        "custom_field_1": "invoice-7781",
+                        "transferType": "Instant"
+                      }
+                    }
+                  },
+                  "getbalance": {
+                    "summary": "GetBalance",
+                    "value": {
+                      "success": true,
+                      "midCode": "MID000123",
+                      "requestType": "GetBalance",
+                      "merchantRefNo": null,
+                      "error": [ ],
+                      "data": {
+                        "available_balance": 15000.00,
+                        "running_balance": 15500.00,
+                        "currency": "EGP",
+                        "available_instant_payout_balance": 12000.00,
+                        "hash": "3f2a9c1e7b5d4f60a8e2c9b17d3f5a6e0c4b8d2f9a1e7c3b5d6f0a2e4c8b1d7f"
+                      }
+                    }
+                  },
+                  "error-midcode": {
+                    "summary": "Validation failed: midCode missing (11001)",
+                    "value": {
+                      "success": false,
+                      "midCode": null,
+                      "requestType": "PAYIN",
+                      "merchantRefNo": null,
+                      "error": [
+                        {
+                          "errorCode": "11001",
+                          "errorMessage": "midCode required"
+                        }
+                      ],
+                      "data": null
+                    }
+                  },
+                  "error-requesttype": {
+                    "summary": "Unknown requestType (11051)",
+                    "value": {
+                      "success": false,
+                      "midCode": null,
+                      "requestType": "PAYMENT",
+                      "merchantRefNo": null,
+                      "error": [
+                        {
+                          "errorCode": "11051",
+                          "errorMessage": "invalid requestType"
+                        }
+                      ],
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BusinessTransaction": {
+        "type": "object",
+        "properties": {
+          "businessType": {
+            "type": "string",
+            "nullable": true
+          },
+          "originCountry": {
+            "type": "string",
+            "nullable": true
+          },
+          "userIdNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "userDob": {
+            "type": "string",
+            "nullable": true
+          },
+          "userBirthplace": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "hsnCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeOfPurpose": {
+            "type": "string",
+            "nullable": true
+          },
+          "loadingPort": {
+            "type": "string",
+            "nullable": true
+          },
+          "userCountry": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportTxnCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportTxnAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DepositRespData": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "Our transaction ID; use it for GetStatus and REFUND.",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 of `midCode~transaction_id~merchantRefNo~status~amount(0.00)~midsecret`; hosted payins add `~checkout_url` before the secret. Check it before trusting the response.",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "integrationType": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_date": {
+            "type": "string",
+            "description": "Format `yyyyMMdd_HHmmss`.",
+            "nullable": true
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Transaction status, e.g. `PENDING`, `APPROVED`, `DECLINED`. The final status arrives in the callback.",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkout_url": {
+            "type": "string",
+            "description": "Hosted payins: redirect the customer here.",
+            "nullable": true
+          },
+          "checkout_html": {
+            "type": "string",
+            "description": "Some seamless methods return an HTML form to render for the customer instead.",
+            "nullable": true
+          },
+          "custom_response_1": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_2": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_3": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_4": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_5": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_6": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_response_7": {
+            "type": "string",
+            "nullable": true
+          },
+          "authMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailData": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "transactionGuid": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` returned for requestType PAYIN."
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "description": "See the error code table in the API description.",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ErrorResponseBody": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Always null.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Rejected request, for any requestType: `success` is false, `error[]` says why and `data` is null."
+      },
+      "GetBalanceRequestBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "requestType": {
+            "enum": [
+              "GetBalance"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GetBalanceRequestDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Get your available payout balance."
+      },
+      "GetBalanceRequestDto": {
+        "type": "object",
+        "properties": {
+          "midcode": {
+            "type": "string",
+            "description": "Your merchant ID code. Required (11001); must be a known merchant (11002).",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 of `midcode~midsecret`. Not needed with a valid `X-Callback-Signature`. Missing 11010, mismatch 11031.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` for requestType GetBalance."
+      },
+      "GetBalanceResponseBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "enum": [
+              "GetBalance"
+            ],
+            "type": "string"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/GetBalanceResponseData"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to GetBalance."
+      },
+      "GetBalanceResponseData": {
+        "type": "object",
+        "properties": {
+          "available_balance": {
+            "type": "number",
+            "format": "double"
+          },
+          "running_balance": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "available_instant_payout_balance": {
+            "type": "number",
+            "format": "double"
+          },
+          "available_instant_payout_nre_balance": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "available_instant_payout_nro_balance": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` returned for requestType GetBalance, in your processing currency."
+      },
+      "GetStatusRequestBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "requestType": {
+            "enum": [
+              "GetStatus"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GetStatusRequestDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Get the current status of a payin, payout or refund."
+      },
+      "GetStatusRequestDto": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchant_ref_no": {
+            "type": "string",
+            "nullable": true
+          },
+          "midcode": {
+            "type": "string",
+            "description": "Your merchant ID code. Required (11001); must be a known merchant (11002).",
+            "nullable": true
+          },
+          "transaction_type": {
+            "type": "string",
+            "description": "`PAYIN`, `PAYOUT` or `REFUND`. Required (11100).",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 of `midcode~transaction_id~transaction_type(lower case)~midsecret`; leave `transaction_id` empty when looking up by `merchant_ref_no`. Not needed with a valid `X-Callback-Signature`. Missing 11010, mismatch 11031.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` for requestType GetStatus. Send `transaction_id` or `merchant_ref_no` (11455); `transaction_id` wins when both are sent."
+      },
+      "GetStatusResponseBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "enum": [
+              "GetStatus"
+            ],
+            "type": "string"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/GetStatusResponseData"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to GetStatus."
+      },
+      "GetStatusResponseData": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchant_ref_no": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "utrnumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "payment_info": {
+            "type": "string",
+            "nullable": true
+          },
+          "payby": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "error_code": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` returned for requestType GetStatus."
+      },
+      "PayinRequestBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "requestType": {
+            "enum": [
+              "PAYIN"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RequestDepositDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Create a payin."
+      },
+      "PayinResponseBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "enum": [
+              "PAYIN"
+            ],
+            "type": "string"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/DepositRespData"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to PAYIN."
+      },
+      "PayoutRequestBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "requestType": {
+            "enum": [
+              "PAYOUT"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RequestWithdrawalDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Create a payout."
+      },
+      "PayoutResponseBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "enum": [
+              "PAYOUT"
+            ],
+            "type": "string"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/WithdrawalRespData"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to PAYOUT."
+      },
+      "RefundRequestBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "requestType": {
+            "enum": [
+              "REFUND"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RefundRequestDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Refund a payin, fully or partly."
+      },
+      "RefundRequestDto": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "The payin to refund. Required (11072); must be your transaction (11073).",
+            "nullable": true
+          },
+          "merchant_ref_no": {
+            "type": "string",
+            "description": "Your unique reference for this refund. Required (11012), at most 100 chars with no whitespace (11135).",
+            "nullable": true
+          },
+          "refund_amount": {
+            "type": "number",
+            "description": "Must be greater than 0 (11106).",
+            "format": "double"
+          },
+          "midcode": {
+            "type": "string",
+            "description": "Your merchant ID code. Required (11001).",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 of `midcode~transaction_id~merchant_ref_no~refund_amount(0.00)~midsecret`. Not needed with a valid `X-Callback-Signature`. Missing 11010, mismatch 11031.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` for requestType REFUND."
+      },
+      "RefundResponseBody": {
+        "required": [
+          "requestType",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`false` when validation failed; `error` then says why. A `true` request can still end up with a `DECLINED` status."
+          },
+          "midCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestType": {
+            "enum": [
+              "REFUND"
+            ],
+            "type": "string"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "description": "Empty on success.",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/RefundResponseData"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to REFUND."
+      },
+      "RefundResponseData": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "parent_transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchant_ref_no": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "refund_amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` returned for requestType REFUND."
+      },
+      "RequestCustomDto": {
+        "type": "object",
+        "properties": {
+          "customField1": {
+            "type": "string",
+            "nullable": true
+          },
+          "customField2": {
+            "type": "string",
+            "nullable": true
+          },
+          "customField3": {
+            "type": "string",
+            "nullable": true
+          },
+          "customField4": {
+            "type": "string",
+            "nullable": true
+          },
+          "customField5": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestDepositDto": {
+        "type": "object",
+        "properties": {
+          "midCode": {
+            "type": "string",
+            "description": "Your merchant ID code. Required (11001); must be a known merchant (11002).",
+            "nullable": true
+          },
+          "integrationType": {
+            "type": "string",
+            "description": "`S` for seamless (server to server) or `PG_H` for the hosted checkout page. Required (11078).",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount in `currency`, a number or numeric string. Must be greater than 0 (11011).",
+            "format": "double"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Lower-case hex SHA-256 of the fields configured for the payment method, joined with `~` and ending with your mid secret. Hosted: `midCode~merchantRefNo~amount(0.00)~currency~midsecret`. Not needed when a valid `X-Callback-Signature` header is sent. Missing 11010, mismatch 11031.",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 code, e.g. `EGP`. Required (11004), 3 letters (11005), enabled for you (11023).",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166 alpha-2 code, e.g. `EG`. Required (11006), 2 letters (11007), enabled for you (11024), valid with the currency (11025).",
+            "nullable": true
+          },
+          "merchantUrl": {
+            "$ref": "#/components/schemas/RequestMerchantUrlDto"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "description": "Your unique reference. Required (11012), at most 100 chars with no whitespace (11135), unique per merchant (11027). Resending a known reference returns the existing transaction.",
+            "nullable": true
+          },
+          "userInfo": {
+            "$ref": "#/components/schemas/RequestUserInfoDto"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Payment method code, e.g. `BT`, `UPI`, `CARD`, `WT`. Required for seamless (11028); must be enabled for you (11355).",
+            "nullable": true
+          },
+          "paymMethodFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Payment-method-specific fields such as `account_number` or `bank_code`. Keys are case-sensitive; which keys are required, and their formats, are configured per payment method.",
+            "nullable": true
+          },
+          "customField": {
+            "$ref": "#/components/schemas/RequestCustomDto"
+          },
+          "riskData": {
+            "$ref": "#/components/schemas/RiskData"
+          },
+          "subscriptionId": {
+            "type": "string",
+            "description": "Subscription ID, for subscription payins only.",
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "description": "Saved card token, for tokenized card payins only.",
+            "nullable": true
+          },
+          "businessCategory": {
+            "type": "string",
+            "description": "Set to `Import&Export` for trade payins; `businessTransaction` is then required (11322 to 11345).",
+            "nullable": true
+          },
+          "businessTransaction": {
+            "$ref": "#/components/schemas/BusinessTransaction"
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` for requestType PAYIN."
+      },
+      "RequestMerchantUrlDto": {
+        "type": "object",
+        "properties": {
+          "notificationUrl": {
+            "type": "string",
+            "description": "Your HTTPS endpoint for the transaction callback. Required (11008).",
+            "nullable": true
+          },
+          "returnUrl": {
+            "type": "string",
+            "description": "Where the customer is sent after paying. Required for payins (11009).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestUserInfoDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "Missing or invalid: 11013.",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Missing or invalid: 11014.",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "description": "Missing: 11015.",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "Missing: 11017.",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "Missing: 11016.",
+            "nullable": true
+          },
+          "postCode": {
+            "type": "string",
+            "description": "Missing: 11018.",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "description": "Digits with an optional leading `+` (11192), 9 to 15 long (11020). Missing: 11019.",
+            "nullable": true
+          },
+          "ipAddress": {
+            "type": "string",
+            "description": "Customer's IPv4 or IPv6 address. Required only where the country or payment method needs it (11131); invalid 11132.",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "Missing 11021, invalid 11022.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Customer details. Payins require every field except `ipAddress` by default; payouts require `firstName`, `lastName`, `phone` and `email`. Some countries and payment methods change this."
+      },
+      "RequestWithdrawalDto": {
+        "type": "object",
+        "properties": {
+          "midCode": {
+            "type": "string",
+            "description": "Your merchant ID code. Required (11001); must be a known merchant (11002).",
+            "nullable": true
+          },
+          "integrationType": {
+            "type": "string",
+            "description": "Payouts are always seamless; leave blank or send `S`.",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount in `currency`, a number or numeric string. Must be greater than 0 (11011) and within your payout limits (11032, 11033).",
+            "format": "double"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Lower-case hex SHA-256 of the fields configured for the payment method, joined with `~` and ending with your mid secret. Not needed when a valid `X-Callback-Signature` header is sent. Missing 11010, mismatch 11031.",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 code, e.g. `EGP`. Required (11004), 3 letters (11005), enabled for you (11023).",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166 alpha-2 code, e.g. `EG`. Required (11006), 2 letters (11007), enabled for you (11024), valid with the currency (11025).",
+            "nullable": true
+          },
+          "info": {
+            "type": "string",
+            "description": "Free-text note stored with the payout.",
+            "nullable": true
+          },
+          "merchantUrl": {
+            "$ref": "#/components/schemas/RequestMerchantUrlDto"
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "description": "Your unique reference. Required (11012), at most 100 chars with no whitespace (11135), unique per merchant (11027). Resending a known reference returns the existing payout.",
+            "nullable": true
+          },
+          "userInfo": {
+            "$ref": "#/components/schemas/RequestUserInfoDto"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Payout method code, e.g. `BT`, `NB`, `MWALLET`, `PIX`. Required (11028); must be enabled for you (11355).",
+            "nullable": true
+          },
+          "paymMethodFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Beneficiary account fields such as `account_number`, `account_name`, `bank_code`, `bank_ifsc`. Required. Keys are case-sensitive; which keys are required, and their formats, are configured per payment method.",
+            "nullable": true
+          },
+          "customField": {
+            "$ref": "#/components/schemas/RequestCustomDto"
+          },
+          "riskData": {
+            "$ref": "#/components/schemas/RiskData"
+          },
+          "senderDetails": {
+            "$ref": "#/components/schemas/SenderDetail"
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` for requestType PAYOUT."
+      },
+      "RiskData": {
+        "type": "object",
+        "properties": {
+          "user_category": {
+            "type": "string",
+            "description": "Your customer category, e.g. `new` or `existing`. Required for payins by default (11114).",
+            "nullable": true
+          },
+          "device_fingerprint": {
+            "type": "string",
+            "description": "Device fingerprint from the risk SDK, if you use it.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SenderDetail": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "postcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "date_of_birth": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "senderID": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "senderType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The remitter of a cross-border payout. `senderType` is `Individual` or `Corporate`."
+      },
+      "WithdrawalRespData": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "Our payout ID; use it for GetStatus.",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 of `midCode~transaction_id~merchantRefNo~status~amount(0.00)~midsecret`. Check it before trusting the response.",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "integrationType": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchantRefNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_field_1": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_field_2": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_field_3": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_field_4": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_field_5": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkout_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "redirect_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "transferType": {
+            "type": "string",
+            "description": "`Instant` or `Batch`.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "`data` returned for requestType PAYOUT."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Process"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paygate Merchant API</title>
+<style>
+  /* Single light look, matching the PayFuture Connect API reference. */
+  :root {
+    --brand-bg: #00242e;
+    --brand-border: #00181f;
+    --brand-fg: #ffffff;
+    --brand-muted: rgba(255, 255, 255, 0.72);
+    --page-bg: #ffffff;
+    color-scheme: light;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--page-bg);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--brand-bg);
+  }
+  #brand {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+    height: 56px;
+    flex: 0 0 auto;
+    background: var(--brand-bg);
+    color: var(--brand-fg);
+    border-bottom: 1px solid var(--brand-border);
+    font: 500 14px/1 system-ui, -apple-system, sans-serif;
+  }
+  #brand .logo { display: flex; align-items: center; flex-shrink: 0; color: var(--brand-fg); }
+  #brand .logo svg { display: block; width: 110px; height: auto; }
+  #brand .title { white-space: nowrap; color: var(--brand-muted); }
+  #brand .draft {
+    margin-left: auto;
+    padding: 4px 10px;
+    border: 1px solid var(--brand-muted);
+    border-radius: 999px;
+    color: var(--brand-muted);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #app { flex: 1 1 auto; min-height: 0; }
+  @media (max-width: 640px) {
+    #brand {
+      gap: 12px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      height: 52px;
+      font-size: 13px;
+    }
+    #brand .logo svg { width: 88px; }
+    #brand .title { display: none; }
+  }
+</style>
+</head>
+<body>
+<header id="brand">
+  <span class="logo" aria-label="PayFuture">
+    <svg width="150" height="39" viewBox="0 0 150 39" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: currentcolor; width: 110px; display: block;"><g clip-path="url(#clip0_682_18246)"><path d="M41.4211 28.8942C41.4211 31.3324 42.6015 32.812 44.5158 32.812C46.4302 32.812 47.6634 31.3079 47.6634 28.9665C47.6634 26.6252 46.5605 25.3356 44.5945 25.3356C42.6285 25.3356 41.4211 26.6497 41.4211 28.8942ZM37.853 22.3715H41.4728V24.6884C41.8096 24.0313 42.2732 23.4478 42.8363 22.9685C43.7744 22.2747 44.9216 21.9204 46.0884 21.9658C49.4979 21.9658 51.4393 24.3304 51.4393 28.486C51.4393 32.9763 49.2618 35.8423 45.8523 35.8423C44.8822 35.8705 43.9281 35.5959 43.124 35.054C42.599 34.6385 42.1465 34.1371 41.7863 33.5732V38.5416H37.8518V22.3715H37.853Z" fill="currentColor"></path><path d="M59.0206 30.1826C57.3411 30.6128 56.7115 31.1142 56.7115 32.0213C56.7115 32.9284 57.4726 33.5254 58.5448 33.5254C59.7337 33.5597 60.8243 32.8696 61.2989 31.7823C61.6014 30.9487 61.7354 30.0637 61.6924 29.1786C61.1673 29.5843 60.7739 29.7278 59.0169 30.1813M61.7969 35.4377V33.5033C60.9018 35.0369 59.2198 35.9415 57.4431 35.8447C54.8722 35.8447 53.1152 34.3639 53.1152 32.2383C53.1017 30.9695 53.8 29.7989 54.925 29.2043C55.921 28.6785 56.7583 28.4406 59.489 27.8902C60.9829 27.6034 61.6137 27.1498 61.6137 26.3616C61.6137 25.4815 60.5649 24.833 59.1214 24.833C57.0767 24.8416 55.1291 25.6984 53.7447 27.1976V24.0215C55.4193 22.651 57.5341 21.9302 59.6993 21.9903C61.6407 21.9903 63.2661 22.564 64.1588 23.5667C64.8375 24.3316 65.0772 25.2388 65.0772 27.1253V35.4377H61.7969Z" fill="currentColor"></path><path d="M73.8191 38.5659H69.9645L71.5383 34.6015L66.1345 22.3726H70.2006L72.1703 27.412C72.7051 28.9124 73.1182 30.4545 73.4035 32.0211C73.6629 30.4631 74.0232 28.9234 74.4793 27.412L76.1847 22.3726H80.0675L73.8215 38.5659H73.8191Z" fill="currentColor"></path><path d="M90.2922 24.665V26.1691H84.8885V35.4364H83.2102V26.1691H81.1384V24.665H83.2102C83.236 22.6117 83.236 22.3959 83.4991 21.5844C84.0229 19.959 85.4405 19.0286 87.3807 19.0286C88.4135 19.0286 89.4254 19.3277 90.2922 19.8891V21.6568C89.589 20.9213 88.609 20.5143 87.591 20.5339C86.4365 20.5339 85.545 20.9642 85.2045 21.7046C84.9155 22.3015 84.8897 22.4928 84.8897 24.0925V24.6662H90.2935L90.2922 24.665Z" fill="currentColor"></path><path d="M102.884 35.4365H101.284L101.389 33.9324L101.416 33.5021L101.469 33.0485C101.469 32.9284 101.476 32.8083 101.495 32.6906C101.234 33.4727 100.741 34.1555 100.078 34.6495C99.1671 35.3176 98.0605 35.6694 96.9306 35.6522C95.6236 35.7013 94.3572 35.1974 93.4412 34.267C92.6014 33.2876 92.4182 32.4761 92.4182 29.6334V23.0886H94.0977V29.6334C94.0977 31.9502 94.2293 32.7862 94.7002 33.3575C95.3433 34.017 96.2457 34.3577 97.1654 34.2891C98.5339 34.3982 99.8409 33.7093 100.523 32.5214C101.126 31.4464 101.202 30.896 101.202 27.9846V23.0886H102.881L102.885 35.4377L102.884 35.4365Z" fill="currentColor"></path><path d="M113.85 23.2321V24.7362H108.814C108.814 27.1744 108.814 28.2948 108.761 30.1335C108.734 30.6594 108.734 31.1841 108.734 31.3275C108.734 33.4261 109.336 34.2891 110.754 34.2891C111.803 34.2891 112.587 33.8834 113.561 32.8083V34.408C112.821 35.2293 111.756 35.6841 110.649 35.6498C109.475 35.7013 108.354 35.1631 107.66 34.2168C107.215 33.4764 107.11 32.7838 107.11 30.8482C107.11 30.5859 107.11 29.702 107.135 28.9371C107.161 27.6953 107.161 27.026 107.161 26.3101C107.161 26.0723 107.161 25.403 107.135 24.7337H105.037V23.7065C106.951 23.4919 107.712 22.5603 108.365 19.644H109.283L109.022 23.2272L113.85 23.2308V23.2321Z" fill="currentColor"></path><path d="M126.573 35.4365H124.974L125.078 33.9324L125.105 33.5021L125.158 33.0485C125.158 32.9284 125.165 32.8083 125.184 32.6906C124.924 33.4727 124.43 34.1555 123.767 34.6495C122.856 35.3176 121.751 35.6694 120.62 35.6522C119.313 35.7013 118.046 35.1974 117.13 34.267C116.291 33.2876 116.107 32.4761 116.107 29.6334V23.0886H117.787V29.6334C117.787 31.9502 117.919 32.7862 118.389 33.3575C119.032 34.017 119.935 34.3577 120.855 34.2891C122.223 34.3982 123.53 33.7093 124.212 32.5214C124.816 31.4464 124.891 30.896 124.891 27.9846V23.0886H126.571L126.574 35.4377L126.573 35.4365Z" fill="currentColor"></path><path d="M129.722 23.0886H131.506L131.296 26.0748C131.464 25.2093 131.883 24.4113 132.503 23.7825C133.161 23.1659 134.04 22.8386 134.943 22.8753C135.84 22.8128 136.715 23.1757 137.303 23.8548V25.3589C136.68 24.6736 135.791 24.29 134.864 24.3083C133.387 24.2679 132.084 25.2645 131.74 26.6963C131.425 27.6279 131.425 27.6512 131.425 33.6713L131.398 35.4389H129.719L129.723 23.0899L129.722 23.0886Z" fill="currentColor"></path><path d="M148.111 28.3902C148.086 27.7442 147.953 27.1067 147.717 26.5036C147.061 25.1393 145.638 24.3082 144.123 24.405C141.763 24.405 140.372 25.8147 140.216 28.3939L148.112 28.3914L148.111 28.3902ZM140.215 29.6565C140.293 32.9074 141.605 34.2901 144.568 34.2901C146.457 34.2901 147.557 33.6932 148.922 31.9255V33.8366C147.764 35.1115 146.078 35.782 144.358 35.6508C140.634 35.6508 138.614 33.4529 138.614 29.3696C138.614 25.2864 140.66 22.8972 144.228 22.8972C147.533 22.8972 149.5 25.0706 149.5 28.7494C149.5 29.084 149.5 29.2262 149.473 29.6577H140.215V29.6565Z" fill="currentColor"></path><path d="M28.5024 8.6495L11.1932 19.1892V39H6.99312V16.8442L20.8781 8.38595L16.7752 4.97445L0.5 14.9013V10.0604L17.0064 0L28.5024 8.6495Z" fill="currentColor"></path><path d="M28.5024 12.9902V17.8262L15.0698 25.9853V21.1494L28.5024 12.9902Z" fill="currentColor"></path><path d="M24.7683 25.2168V30.0527L15.0698 35.9527V31.1155L24.7683 25.2168Z" fill="currentColor"></path></g><defs><clipPath id="clip0_682_18246"><rect width="149" height="39" fill="white" transform="translate(0.5)"></rect></clipPath></defs></svg>
+  </span>
+  <span class="title">Paygate Merchant API</span>
+  <span class="draft">Draft for review</span>
+</header>
+<div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.76.4"></script>
+<script>
+  Scalar.createApiReference('#app', {
+    url: 'openapi.json',
+    theme: 'default',
+    layout: 'modern',
+    forceDarkModeState: 'light',
+    hideDarkModeToggle: true,
+    hideDownloadButton: false,
+    // The spec has no server URL yet, so a test request would go to github.io.
+    hideTestRequestButton: true,
+    withDefaultFonts: false,
+    showDeveloperTools: 'never',
+    agent: { disabled: true },
+    mcp: { disabled: true },
+    customCss: `
+      .light-mode { --scalar-color-accent: #003d4e; }
+      a[href*="scalar.com"] { display: none !important; }
+    `,
+    metaData: { title: 'Paygate Merchant API' },
+  });
+</script>
+</body>
+</html>
